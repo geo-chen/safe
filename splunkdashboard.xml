@@ -1,0 +1,148 @@
+<form>
+  <label>Automated Forensics Investigator</label>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="text" token="server1">
+      <label>server1</label>
+    </input>
+    <input type="text" token="server2">
+      <label>server2</label>
+    </input>
+    <input type="text" token="server3">
+      <label>server3</label>
+    </input>
+    <input type="text" token="informational">
+      <label>informational</label>
+    </input>
+    <input type="text" token="warning">
+      <label>warning</label>
+    </input>
+    <input type="text" token="critical">
+      <label>critical</label>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <single>
+        <title>$server1$</title>
+        <search>
+          <query>index=notable | stats sum(points) as points count by orig_host | search orig_host = $server1$ | fields points</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[100,200,300]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>$server2$</title>
+        <search>
+          <query>index=notable | stats sum(points) as points count by orig_host | search orig_host = $server2$ | fields points</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[100,200,300]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>$server3$</title>
+        <search>
+          <query>index=notable search_name="Baseline - New Processes"  | stats sum(points) as points count by orig_host | search orig_host = $server3$ | fields points</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[100,200,300]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <search>
+          <query>index=notable orig_host="$server1$" | timechart count by search_name</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <search>
+          <query>index=notable orig_host="$server2$" | timechart count by search_name</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <search>
+          <query>index=notable orig_host="$server3$" | timechart count by search_name</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>index=notable orig_host="$server1$" | stats values(*) as * count, sum(points) as points by search_name | fields - date_*, - eventtype, - host, - index, - info_*, - linecount, - orig_action_name, - orig_rid, - orig_sid, - source, - sourcetype, - splunk_server, - tag*, - timeendpos, - timestartpos | convert ctime(time)</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>table</title>
+        <search>
+          <query>index=notable orig_host="$server2$" | stats values(*) as * count, sum(points) as points by search_name | fields - date_*, - eventtype, - host, - index, - info_*, - linecount, - orig_action_name, - orig_rid, - orig_sid, - source, - sourcetype, - splunk_server, - tag*, - timeendpos, - timestartpos | convert ctime(time)</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <search>
+          <query>index=notable orig_host="$server3$" | stats values(*) as * count, sum(points) as points by search_name | fields - date_*, - eventtype, - host, - index, - info_*, - linecount, - orig_action_name, - orig_rid, - orig_sid, - source, - sourcetype, - splunk_server, - tag*, - timeendpos, - timestartpos | convert ctime(time)</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>
