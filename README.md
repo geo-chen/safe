@@ -243,9 +243,17 @@ Running the forensics scripts now reflects the increase in severity to "critical
 ![safe-5](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-5.png)
 
 ## Setting up
+If you are using Splunk as your SIEM, please set up your Enterprise Security instance, and install a Splunk Forwarder on your master/bastion server. Instructions on setting that up can be found here: https://www.splunk.com/en_us/download/splunk-enterprise.html
+
+Once Splunk is set up, make sure your account on bastion can access the remote target servers. 
+
+Splunk rules can be set up by running the above rules in your Splunk search, and then saving them as alerts. The Splunk dashboard is available in this repository as a .xml file which can be imported.
 
 ## Running SAFE
-
+On the master server, run
+```
+bash ./executer.sh
+```
 
 ## Roadmap to Arsenal: TODO
  1. Error handling in forensics scripts
