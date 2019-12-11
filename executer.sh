@@ -31,8 +31,22 @@ read instructions
 
 if [ $instructions = "r" ]
 then 
-echo 'For the current list of 10 servers, a 95% confidence level and confidence interval of 45 would require a sample size of 3.'
-#echo 'For a pool of 100 servers, using a 95% confidence level and confidence interval of 45, the sample size would be 5.'
+
+echo ''
+echo "Please enter the population size: " 
+read population
+
+echo ''
+echo "Please enter the desired confidence interval (1 to 50): " 
+read confidenceinterval
+
+echo ''
+samplesize=$(python ./sampling.py $population $confidenceinterval)
+
+# Use values 10 (population) and 50 (confidence interval) for now
+echo "Population of "$population" with 95% Confidence Level and "$confidenceinterval" Confidence Interval of requires a sample size of "$samplesize
+
+echo ''
 echo 'Current pool of servers:'
 echo '1. hslxpdwbwm01'
 echo '2. hslxpdwbwm02'
@@ -45,20 +59,18 @@ echo '8. hswnpdwbwm08'
 echo '9. hswnpdwbwm09'
 echo '10. hswnpdwbwm10'
 
-echo "please enter number of sample size: " 
-
-read numberofmachines
+numberofmachines=$samplesize
 #if [ ! -z "$numberofmachies" ]; then echo "number of machines count cannot be empty";
 #exit 1
 #fi
-if [ $numberofmachines = "1" ]
+if [ $numberofmachines == "1" ]
    then
 1. hslxpdwbwm01
 #sshpass -p '123' scp -r /tmp/fartifactupload/archive-ubuntu-2019-12-05.zip master@172.20.10.4:/home/master/Dropbox/hacksmith/test/evidence.zip
    sshpass -p '123'  ssh linux1@172.20.10.10 sudo sh < linuxforensics.sh
 exit 1
 
-elif [ $numberofmachines = "2" ]
+elif [ $numberofmachines == "2" ]
  then 
 echo 'Selected servers:'
 echo '1. hslxpdwbwm01'
@@ -70,12 +82,14 @@ sshpass -p '123' ssh administrator@172.20.10.7 powershell.exe < powershellscript
 
   exit 1
 
-elif [ $numberofmachines = "3" ]
+elif [ $samplesize == "3" ]
  then 
-echo 'Selected servers:'
+echo ''
+echo 'Selected '$samplesize' servers:'
 echo '1. hslxpdwbwm01'
 echo '2. hslxpdwbwm03'
 echo '3. hswnpdwbwm05'
+echo ''
 
 sshpass -p '123' ssh linux1@172.20.10.10 sudo sh < linuxforensics.sh
 #sshpass -p '123' ssh administrator@172.20.10.7 powershell.exe < powershellscript.ps1
