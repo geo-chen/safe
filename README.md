@@ -46,7 +46,7 @@ Here's what we have currently from HackSmith v3.0
 | ~/.ssh/known_hosts | for each newly added known host | +10 |
 | /etc/passwd | for each newly added user | +5 |
 
-### 3. Notable Scoring - > Dashboard
+### iii. Notable Scoring - > Dashboard
 This is directly managed by our Threat Scoring Dashboard.
 
 
