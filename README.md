@@ -10,13 +10,21 @@ There are four main features in SAFE:
  3. Automatic remote orchestration and log ingestion
  4. Analysis to churn out a threat score that is indicative of the likelyhood of server compromise
 
+## 1. Sampling
 
-## Sampling
-
-## Forensics Acqusition Scripts
+## 2. Forensics Acqusition Scripts
 Current forensics scripts come in two flavours - Linux and Windows.
 
-## Remote Orchestration & Log Ingestion
+## 3. Remote Orchestration & Log Ingestion
 
-## Analysis and Threat Scoring
+## 4. Analysis and Threat Scoring
 
+
+## Demo
+
+## Roadmap to Arsenal: TODO
+ 1. Error handling in forensics scripts
+ 2. Bundling with ELK
+ 3. Adding more rules for calculation of threat score
+ 4. Making log ingestion more robust
+ 5. Beefing up on powershell script
