@@ -37,9 +37,9 @@ Sampling is based on 95% Confidence Level, a chosen Confidence Interval between 
 
 ## 2. Forensics Acqusition Scripts
 Current forensics scripts come in two flavours - Linux and Windows. These scripts:
- 1. Collect all useful logs
- 2. Collect filtered log entries for the purpose of threat scoring
-
+ 1. Collect filtered log entries for the purpose of threat scoring
+ 2. Collect all other useful logs for manual investigations
+ 
 ## 3. Remote Orchestration & Log Ingestion
 Remote orchestration on target machines can be configured using any one of the following options:
  1. SSH Keys
