@@ -28,6 +28,10 @@ There are four main features in SAFE:
  4. Analysis to churn out a threat score that is indicative of the likelyhood of server compromise
 
 ## 1. Sampling
+There are two modes on choosing target servers - Sampling and Specified.
+Sampling is used on larger pools of servers where we either want confirmation on the security health of target pool, or perform threat hunting (in this case, potentially undetected compromised servers).
+
+Sampling is based on 95% Confidence Level, a chosen Confidence Interval between 0.1 and 50, and the population size. 
 
 ## 2. Forensics Acqusition Scripts
 Current forensics scripts come in two flavours - Linux and Windows.
@@ -53,6 +57,63 @@ Here's what we have currently from HackSmith v3.0
 | crontab | for each modified cronjob | +5 | 
 | /etc/passwd | new root user | +20 | 
 
+<details>
+  <summary>Base Rules</summary>
+
+`Base - Bad IP`
+```index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*webserveraccess.log" earliest=-1d
+| rex field=source ".+artefacts\/(?<host>[a-zA-Z0-9]+)\_.+"
+| stats count by src_ip, host
+| rename src_ip as ip
+| lookup threatintel.csv ip
+| where isnotnull(threat_list_name)
+| eval points = 3
+| eval concat = host . ip
+| search NOT [search index=notable search_name="Base - Bad IP" earliest=-1d | table ip,orig_host | eval concat = orig_host . ip | table concat]
+| fields host, ip, points
+```
+
+`Base - Bad Logins`
+```
+index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*badlogins.log" 
+| rex field=source ".+artefacts\/(?<host>[a-zA-Z0-9]+)\_.+"
+| rex "(?<user>[a-zA-Z0-9]+)\ .+" max_match=0
+| stats count by user, host
+| eval points = 3
+| eval concat = user . host
+| search NOT user = "btmp"
+| search NOT [search index=notable search_name="Base - Bad Logins" earliest=-1d | table user,orig_host | eval concat = user . orig_host | table concat]
+| fields user, host, points
+```
+
+`Base - New Root Users`
+```
+index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*rootusers.log" earliest=-1d
+| rex "(?<user>.+)" max_match=0
+| rex field=source ".+artefacts\/(?<host>[a-zA-Z0-9]+)\_.+"
+| stats count by user, host
+| search NOT user IN ("root") `comment("whitelist")`
+| eval points = 20
+| eval concat = user . host
+| search NOT [search index=notable search_name="Base - New Root Users" earliest=-7d | table user,orig_host | eval concat = user . orig_host | table concat]
+| fields user, host, points
+```
+
+`Base - OWASP Payloads`
+```
+index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*webserveraccess.log" status!=200 `comment("general assumption made is that 200 means well handled. not fully accurate of course")` earliest=-1d
+| rex field=source ".+artefacts\/(?<host>[a-zA-Z0-9]+)\_.+"
+| stats count by src_ip, host, uri_query
+| rename uri_query as payload
+| lookup payloads.csv payload
+| where isnotnull(attack)
+| eval points = 3
+| eval concat = host . payload
+| search NOT [search index=notable search_name="Base - OWASP Payloads" earliest=-1d | table payload,orig_host | eval concat = orig_host . payload | table concat]
+| fields host, payload, points
+```
+</details>
+
 ### ii. Baseline (Comparison) Rules - > Notable Events
 
 | Log  | Criteria | Points |
@@ -63,9 +124,83 @@ Here's what we have currently from HackSmith v3.0
 | ~/.ssh/known_hosts | for each newly added known host | +10 |
 | /etc/passwd | for each newly added user | +5 |
 
+<details>
+  <summary>Baseline Rules</summary>
+
+`Baseline - New Users`
+```
+index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*sshaccess.log" user earliest=-1d
+| rex field=source ".+artefacts\/(?<host>[a-zA-Z0-9]+)\_.+"
+| rex "New\ session\ /d+ of\ user\ (?<user>[a-zA-Z0-9])"
+| rex "session\ opened\ for\ user\ (?<user>[a-zA-Z0-9])\ by"
+| eval time = max(_time) `comment("I know this line should go below")`
+| stats count by user, host
+| eval points = 10
+| search NOT user IN ("sshd","mysql","gdm") `comment("whitelist")`
+| eval concat = user . host
+| search NOT [search index=notable search_name="Baseline - New Users" earliest=-7d | table user,orig_host | eval concat = user . orig_host | table concat]
+| fields user, host, points
+```
+
+`Baseline - New SSH Users`
+```
+index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*userlist.log" earliest=-1d
+| rex field=source ".+artefacts\/(?<host>[a-zA-Z0-9]+)\_.+"
+| rex "(?<user>.+)" max_match=0
+| stats count by user, host
+| search NOT user IN ("sshd","mysql","_apt","avahi","avahi-autoipd","backup","bin","colord","cups-pk-helper","daemon","dnsmasq","games","gdm","geoclue","gnats","gnome-initial-setup","hplip","irc","kernoops","list","lp","mail","man","messagebus","news","nobody","proxy","pulse","root","rtkit","saned","speech-dispatcher","sync","sys","syslog","systemd-network","systemd-resolve","usbmux","uucp","uuidd","whoopsie") `comment("whitelist")`
+| eval points = 5
+| eval concat = user . host
+| search NOT [search index=notable search_name="Baseline - New SSH Users" earliest=-7d | table user,orig_host | eval concat = user . orig_host | table concat]
+| fields user, host, points
+```
+
+`Baseline - New Processes`
+```
+index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*pidpsname.log" earliest=-1h
+| rex "(?<pid>\d+)\ (?<cmd>\w+)" max_match=0
+| rex field=source ".+artefacts\/(?<host>[a-zA-Z0-9]+)\_.+"
+| eval time = max(_time)
+| eval points = 5
+| stats count by time, cmd, host, points
+| eval concat = cmd . host
+| search NOT [search index=notable search_name="Baseline - New Processes" earliest=-7d | table cmd,orig_host | eval concat = cmd . orig_host | table concat]
+| fields time, cmd, host, points
+```
+</details>
+
 ### iii. Notable Scoring - > Dashboard
 This is managed by our Threat Scoring Dashboard.
 
+<details>
+  <summary>Notable Scoring</summary>
+
+```
+index=notable | stats sum(points) as points count by orig_host | search orig_host = $server1$ | fields points
+```
+```
+index=notable orig_host="$server1$" | stats values(*) as * count, sum(points) as points by search_name | fields - date_*, - eventtype, - host, - index, - info_*, - linecount, - orig_action_name, - orig_rid, - orig_sid, - source, - sourcetype, - splunk_server, - tag*, - timeendpos, - timestartpos | convert ctime(time)
+```
+</details>
+
+
+<details>
+  <summary>Simulated Thread Feed</summary>
+
+### Simulated Thread Feed
+```
+| makeresults `comment("Intel Feed")`
+| eval ip="4.4.4.4"
+| eval threat_list_name = "c2 traffic"
+| append [|makeresults
+| eval ip="5.5.5.5"
+| eval threat_list_name = "tor node"]
+| append [|makeresults
+| eval ip="172.20.10.6"
+| eval threat_list_name = "hacker ip"]
+| outputlookup threatintel.csv
+```
+</details>
 
 ## Demo
 
@@ -89,6 +224,11 @@ Running the forensics scripts now reflects the increase in severity to "critical
 ## Architecture & Design 
 ![safe-5](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-5.png)
 
+## Setting up
+
+## Running SAFE
+
+
 ## Roadmap to Arsenal: TODO
  1. Error handling in forensics scripts
  2. Bundling with ELK
@@ -96,3 +236,4 @@ Running the forensics scripts now reflects the increase in severity to "critical
  4. Making log ingestion more robust
  5. Beefing up on powershell script
  6. Data enrichment
+ 7. Randomising and Sampling algorithm
