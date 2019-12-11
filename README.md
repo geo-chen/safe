@@ -33,6 +33,8 @@ Sampling is used on larger pools of servers where we either want confirmation on
 
 Sampling is based on 95% Confidence Level, a chosen Confidence Interval between 0.1 and 50, and the population size. 
 
+![safe-6](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-6.png)
+
 ## 2. Forensics Acqusition Scripts
 Current forensics scripts come in two flavours - Linux and Windows.
 
