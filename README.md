@@ -3,6 +3,23 @@
 Security incidents are usually created by alerts or events, which are based on a small set of forwarded logs. When a server is suspected to be compromised, we go back to the source for the rest of the logs to investigate on traffic and endpoint.
 
 SAFE enables security administrators to run automated forensics investigations on a selected set of machines, either specified or via sampling, to get a baseline threat score on the likelyhood of a server compromise. A number of logs, including web server, syslog, system, network logs are surveyed for this analysis.
+<details>
+  <summary>Details</summary>
+  
+  #### Problems
+  1. [accuracy] Misses (FNs) on security threat detections (reactive) are common, many of which are only discovered during in-depth forensics investigation.
+  2. [cost] While forensics investigation is accurate (richer logs), it’s expensive, and is usually only conducted when machine is suspected to be compromised.
+  3. [time] We (incident response team) spend a lot of time manually reviewing forensics artefacts for various incidents
+  4. [scalability] It’s virtually impossible to conduct forensics investigations over many servers in a scalable manner.
+
+  #### Proposed Solution – Finding evil in an automated, scalable manner
+Using a proactive and sampling approach, our tool automatically conducts a basic forensics investigations on an identified healthy (we would like to assume compromised) pool of servers to get threat scores, flagging out suspected compromised machines for further investigations.
+
+  #### Target Users
+  1. Security Incident Responders
+  2. L3 SOC
+  3. Server Owners
+</details>
 
 There are four main features in SAFE:
  1. Sampling based on 95% confidence level and stipulated confidence interval
@@ -68,6 +85,9 @@ Running the forensics scripts now reflects the increase in severity to "critical
 
 ![safe-4](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-4.png)
 
+
+## Architecture & Design 
+![safe-5](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-5.png)
 
 ## Roadmap to Arsenal: TODO
  1. Error handling in forensics scripts
