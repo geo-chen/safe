@@ -47,10 +47,12 @@ Here's what we have currently from HackSmith v3.0
 | /etc/passwd | for each newly added user | +5 |
 
 ### iii. Notable Scoring - > Dashboard
-This is directly managed by our Threat Scoring Dashboard.
+This is managed by our Threat Scoring Dashboard.
 
 
 ## Demo
+
+
 
 ## Roadmap to Arsenal: TODO
  1. Error handling in forensics scripts
@@ -58,3 +60,4 @@ This is directly managed by our Threat Scoring Dashboard.
  3. Adding more rules for calculation of threat score
  4. Making log ingestion more robust
  5. Beefing up on powershell script
+ 6. Data enrichment
