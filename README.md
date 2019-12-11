@@ -52,6 +52,21 @@ This is managed by our Threat Scoring Dashboard.
 
 ## Demo
 
+We run a command injection exploit on a WordPress instance on hslxpdwbvm01 (HackSmith - Linux - Production - Web - VM - #01):
+
+![safe-1](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-1.png)
+
+Running the forensics scripts show us that hslxpdwbvm01 is now at "warning" (orange) level (for demonstration sake):
+
+![safe-3](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-3.png)
+
+We now run a simulated dirty cow exploit where the uid of a malicious user is changed to 0:
+
+![safe-2](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-2.png)
+
+Running the forensics scripts now reflects the increase in severity to "critical" red:
+
+![safe-4](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-4.png)
 
 
 ## Roadmap to Arsenal: TODO
