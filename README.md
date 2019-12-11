@@ -78,7 +78,8 @@ Here's what we have currently from HackSmith v3.0
   <summary>Base Rules</summary>
 
 `Base - Bad IP`
-```index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*webserveraccess.log" earliest=-1d
+```
+index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*webserveraccess.log" earliest=-1d
 | rex field=source ".+artefacts\/(?<host>[a-zA-Z0-9]+)\_.+"
 | stats count by src_ip, host
 | rename src_ip as ip
