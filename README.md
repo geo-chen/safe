@@ -232,9 +232,13 @@ Running the forensics scripts show us that hslxpdwbvm01 is now at "warning" (ora
 
 We now run a simulated dirty cow exploit where the uid of a malicious user is changed to 0:
 
+![safe-7](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-7.png)
+
+Then we run the forensics script:
+
 ![safe-2](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-2.png)
 
-Running the forensics scripts now reflects the increase in severity to "critical" red:
+Checking on the dashboard, we now see the increase in severity to "critical" (red) level, which flags for manual intervention:
 
 ![safe-4](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-4.png)
 
