@@ -1,8 +1,8 @@
 # Sample Analysing Forensics Examiner (SAFE)
 
-Security incidents are usually created by alerts or events, which are based on a small set of forwarded logs. When a server is suspected to be compromised, we go back to the source for the rest of the logs to investigate on traffic and endpoint.
+Security incidents are usually created by alerts or events, which are based on a small set of forwarded logs. When a server is suspected to be compromised, we go back to the host machine to perform forensics on the rest of the logs to investigate the network traffic and endpoint.
 
-SAFE enables security administrators to run automated forensics investigations on a selected set of machines, either specified or via sampling, to get a baseline threat score on the likelyhood of a server compromise. A number of logs, including web server, syslog, system, network logs are surveyed for this analysis.
+Sample Analysing Forensics Examiner (SAFE) enables security administrators/engineers to run automated forensics investigations effortlessly on a selected set of machines, either specified or via sampling, to get a baseline threat score on the likelyhood of a server compromise. A number of logs, including web server, syslog, system, network logs are surveyed for this analysis. With SAFE, security engineers can easily survey a selected pool of servers to hunt for any potential infection or compromise.
 <details>
   <summary>Details</summary>
   
