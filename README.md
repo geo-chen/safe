@@ -23,9 +23,9 @@ Using a proactive and sampling approach, our tool automatically conducts a basic
 
 There are four main features in SAFE:
  1. Sampling based on 95% confidence level and stipulated confidence interval
- 2. Acqusition of forensics artefacts on host machines
+ 2. Acquisition of forensics artefacts on host machines
  3. Automatic remote orchestration and log ingestion
- 4. Analysis to churn out a threat score that is indicative of the likelyhood of server compromise
+ 4. Analysis to churn out a threat score that is indicative of the likelihood of server compromise
 
 ## 1. Sampling
 There are two modes on choosing target servers - Sampling and Specified.
@@ -35,7 +35,7 @@ Sampling is based on 95% Confidence Level, a chosen Confidence Interval between 
 
 ![safe-6](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-6.png)
 
-## 2. Forensics Acqusition Scripts
+## 2. Forensics Acquisition Scripts
 Current forensics scripts come in two flavours - Linux and Windows. These scripts:
  1. Collect filtered log entries for the purpose of threat scoring
  2. Collect all other useful logs for manual investigations
@@ -50,7 +50,7 @@ Remote orchestration on target machines can be configured using any one of the f
 Without sudo/admin rights, log collection would be limited. 
 
 The current setup provides two options for log ingestion:
- 1. Splunk forwarder - installing splunk forwarder on the master server where the forensics scripts are run.
+ 1. Splunk forwarder - installing Splunk forwarder on the master server where the forensics scripts are run.
  2. Dropbox - setting up syncing Dropbox folders on master server and Splunk server.
  
 In our tests over mobile network, the time taken for syncing and ingesting was within ten seconds.
