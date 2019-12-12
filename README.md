@@ -267,3 +267,5 @@ bash ./executer.sh
  5. Beefing up on powershell script
  6. Data enrichment
  7. Randomising and Sampling algorithm
+ 8. Access management
+ 9. Remove hardcoded configurations
