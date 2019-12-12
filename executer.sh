@@ -47,7 +47,7 @@ samplesize=$(python ./sampling.py $population $confidenceinterval)
 echo "Population of "$population" with 95% Confidence Level and "$confidenceinterval" Confidence Interval of requires a sample size of "$samplesize
 
 echo ''
-echo 'Current pool of servers:'
+echo 'Current pool of servers (to read from file, hardcoded for demo simplicity):'
 echo '1. hslxpdwbwm01'
 echo '2. hslxpdwbwm02'
 echo '3. hslxpdwbwm03'
