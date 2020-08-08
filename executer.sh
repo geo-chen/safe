@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 echo ''
 echo ''
 echo '                                           ,,                                             ,,                   ,,                                '
@@ -25,89 +25,103 @@ echo ''
 echo "Please make sure the upload folder is configured correctly. (Hardcoded for now)"
 echo "Example: change this </home/master/Dropbox/hacksmith/test/> to your destination folder "
 echo 'To run forensics on a sampled pool of servers, press "r" '
-echo 'To run forensics on a specified list of servers, press "u" '
+echo 'To run forensics on a specified list of server/s, press "u" '
+echo 'Press "h" for help ' 
 
 read instructions
-
 if [ $instructions = "r" ]
 then 
-
 echo ''
-echo "Please enter the population size: " 
-read population
-
+printf "Please enter Master Server : " 
+read masterserver
 echo ''
-echo "Please enter the desired confidence interval (1 to 50): " 
+echo ''
+printf "Please enter the username: " 
+read username
+echo ''
+###echo -n "Please enter the password" 
+###read -s password
+stty -echo
+printf "Password: "
+read password
+stty echo
+printf "\n"
+echo ''
+echo "Please enter the desired confidence interval (1 to 100):"
+echo "( 1 means, I have no confident about the system. 100 meas, my system is 100 secured.) " 
 read confidenceinterval
-
 echo ''
-samplesize=$(python ./sampling.py $population $confidenceinterval)
-
-# Use values 10 (population) and 50 (confidence interval) for now
+population=$(wc -l server-ip-list.txt |cut -d " " -f1) 
+samplesize=$(python sampling.py $population $confidenceinterval)
 echo "Population of "$population" with 95% Confidence Level and "$confidenceinterval" Confidence Interval of requires a sample size of "$samplesize
-
-echo ''
-echo 'Current pool of servers (to read from file, hardcoded for demo simplicity):'
-echo '1. hslxpdwbwm01'
-echo '2. hslxpdwbwm02'
-echo '3. hslxpdwbwm03'
-echo '4. hslxpdwbwm04'
-echo '5. hswnpdwbwm05'
-echo '6. hswnpdwbwm06'
-echo '7. hswnpdwbwm07'
-echo '8. hswnpdwbwm08'
-echo '9. hswnpdwbwm09'
-echo '10. hswnpdwbwm10'
-
 numberofmachines=$samplesize
-#if [ ! -z "$numberofmachies" ]; then echo "number of machines count cannot be empty";
-#exit 1
-#fi
-if [ $numberofmachines == "1" ]
-   then
-1. hslxpdwbwm01
-#sshpass -p '123' scp -r /tmp/fartifactupload/archive-ubuntu-2019-12-05.zip master@172.20.10.4:/home/master/Dropbox/hacksmith/test/evidence.zip
-   sshpass -p '123'  ssh linux1@172.20.10.10 sudo sh < linuxforensics.sh
-exit 1
-
-elif [ $numberofmachines == "2" ]
- then 
-echo 'Selected servers:'
-echo '1. hslxpdwbwm01'
-echo '2. hslxpdwbwm03'
-
-sshpass -p '123' ssh linux1@172.20.10.10 sudo sh < linuxforensics.sh
-sshpass -p '123' ssh administrator@172.20.10.7 powershell.exe < powershellscript.ps1
-
-
-  exit 1
-
-elif [ $samplesize == "3" ]
- then 
 echo ''
-echo 'Selected '$samplesize' servers:'
-echo '1. hslxpdwbwm01'
-echo '2. hslxpdwbwm03'
-echo '3. hswnpdwbwm05'
+echo 'Sample size is ' $numberofmachines
 echo ''
+randomip=$(shuf -i 1-$samplesize -n 1)
+echo 'Random Sample possition: ' $randomip
+#for i in $numberofmachines; do
+while [ $numberofmachines -gt 0 ]; do
+              
+randomip=$(shuf -i 1-$samplesize -n 1);
 
-sshpass -p '123' ssh linux1@172.20.10.10 sudo sh < linuxforensics.sh
-#sshpass -p '123' ssh administrator@172.20.10.7 powershell.exe < powershellscript.ps1
-sshpass -p '123' ssh linux2@172.20.10.8 sudo sh < linuxforensics.sh
+ip=$(awk "NR==$randomip" server-ip-list.txt);
+echo 'Random Server IP: ' $ip ;
+grep -v -E "^#" /etc/passwd 2>/dev/null| awk  -F: '$3 == 0 { print $1}'
 
-  exit 1
+if [ $(ping -c1 $ip |grep -i "ttl" |cut -d " " -f6 |cut -d "=" -f1) -eq "ttl" ]
+then 
+ttlvalue=$(ping -c1 $ip |grep -i "ttl" |cut -d " " -f6 |cut -d "=" -f2)
+
 else
-    echo "please check your input"
-    exit 1
+ttlvalue=$(ping -c1 $ip |grep -i "ttl" |cut -d " " -f7 |cut -d "=" -f2)
+
 fi
+if [ $ttlvalue -gt 55 -a $ttlvalue -lt 70 ];
+ then
+echo $ip ' is a linux machine' ;
+  numberofmachines=$((numberofmachines-1))
+ 
+sshpass -p $password scp linuxforensics.sh  $username@$ip:/tmp/linuxforensics.sh
 
+sshpass -p $password ssh -l $username -o StrictHostKeyChecking=no $ip <<EOFD
 
-elif [ $instructions = "u" ]
+echo -e "$password\n"  | sudo -S whoami && sudo su
+
+chmod a+x /tmp/linuxforensics.sh
+cd /tmp && sh ./linuxforensics.sh
+
+ 
+sshpass -p $password scp -o StrictHostKeyChecking=no  /tmp/fartifactupload/* $username@$masterserver:/home/admin/Dropbox/hacksmith/Arsenal/splunk/
+rm -rf /tmp/linuxforensics.sh
+
+EOFD
+
+elif [ $ttlvalue -gt 120 -a $ttlvalue -lt 130 ];
+then 
+echo $ip ' is a windows machine';
+  numberofmachines=$((numberofmachines-1));
+sshpass -p $password ssh -l $username -o StrictHostKeyChecking=no $ip powershell.exe < powershellscript.ps1 &
+else
+echo 'check the ttl values for: ' $ttlvalue ;
+fi
+wait
+
+done < server-ip-list.txt
+# --------------------------------------------------------------------------
+elif [ $instructions = "h" ] 
 then
-echo "please run the following command"
-echo "(1). ssh <UserName>@<IP> sudo sh < /home/master/fscript-final.sh"
-echo "(2). make sure to change <UserName> field with administrator/root privilege user and <IP> field with remote machine IP"
-echo "(3). enter password for User"
-exit 1
+
+echo "
+username = remore server ssh username
+password= remote server ssh password
+";
+
+elif [ $instructions = "u" ] 
+then
+echo "please run the following command on selected server/s. 
+
+sshpass -p [password] ssh -l [username] -o StrictHostKeyChecking=no [ip] sudo sh < linuxforensics.sh 
+";
 
 fi
