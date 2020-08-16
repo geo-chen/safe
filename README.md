@@ -33,6 +33,14 @@ Sampling is used on larger pools of servers where we either want confirmation on
 
 Sampling is based on 95% Confidence Level, a chosen Confidence Interval between 0.1 and 50, and the population size. 
 
+In our demonstration, our naming convention for host "hslxpdwbvm01" is as follows:
+  + hs - hacksmith (or whichever workgroup naming you have)
+  + lx - linux
+  + pd - production environment
+  + wb - web server
+  + vm - VM as the type of server
+  + 01 - index number 1
+
 ![safe-6](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-6.png)
 
 ## 2. Forensics Acquisition Scripts
