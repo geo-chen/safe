@@ -40,7 +40,7 @@ In our demonstration, our naming convention for host "hslxpdwbvm01" is as follow
   + vm - VM as the type of server
   + 01 - index number 1
 
-![safe-6](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-6.png)
+![safe-6](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-6-2.png)
 
 ## 2. Forensics Acquisition Scripts
 Current forensics scripts come in two flavours - Linux and Windows. These scripts:
