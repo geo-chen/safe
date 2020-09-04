@@ -67,7 +67,7 @@ In our tests over mobile network, the time taken for syncing and ingesting was w
 
 Here's what we have currently from HackSmith v3.0
 
-### i. Base (Condition) Rules - > Notable Events
+### i. Base (Condition) Rules - > Summary/Notable Events
 
 | Log  | Criteria | Points |
 | ------------- | ------------- | ------ | 
@@ -235,7 +235,7 @@ index=safe source=*webserveraccess.log earliest=-1d
 ```
 </details>
 
-### ii. Baseline (Comparison) Rules - > Notable Events
+### ii. Baseline (Comparison) Rules - > Summary/Notable Events
 
 | Log  | Criteria | Points |
 | ------------- | ------------- | ------ | 
@@ -367,7 +367,7 @@ index=safe source="*/Security.xml" earliest=-1d
 
 </details>
 
-### iii. Notable Scoring - > Dashboard
+### iii. Summary/Notable Scoring - > Dashboard
 This is managed by our Threat Scoring Dashboard.
 
 <details>
