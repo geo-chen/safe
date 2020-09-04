@@ -65,8 +65,6 @@ In our tests over mobile network, the time taken for syncing and ingesting was w
 ## 4. Analysis and Threat Scoring
 3 Levels of rules are performed. First level is the "Base" rules where forensics log statistics are filtered according to predefined criteria and thresholds to highlight notable events. The second level, "Baseline" rules compares the current statistics with the previous capture that is at least 48 hours ago to highlight changes from the previous benchmark. The third level, "Notable Scoring", picks up the notable events created by the first two levels of rules, and applies individual points to calculate an eventual threat score for the various hosts.
 
-Here's what we have currently from HackSmith v3.0
-
 ### i. Base (Condition) Rules - > Summary/Notable Events
 
 | Log  | Criteria | Points |
