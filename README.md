@@ -1139,7 +1139,10 @@ We run a command injection exploit on a WordPress instance on hslxpdwbvm01 (Hack
 
 ![safe-1](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-1.png)
 
-Running the forensics scripts show us that hslxpdwbvm01 is now at "warning" (orange) level (for demonstration sake):
+We run the SAFE orchestrator script to gather forensics artefacts and have them forwarded to Splunk. Once ingested, we launch the Log Scoring Dashboard to run a series of predefined rules against the logs to score them:
+![safe-9](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-9.png)
+
+Next, we load the SAFE Dashboard and it show us that hslxpdwbvm01 is now at "warning" (orange) level (for demonstration sake):
 
 ![safe-3](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-3.png)
 
@@ -1147,11 +1150,11 @@ We now run a simulated dirty cow exploit where the uid of a malicious user is ch
 
 ![safe-7](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-7.png)
 
-Then we run the forensics script:
+Then we run the SAFE orchestrator script:
 
 ![safe-2](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-2.png)
 
-Checking on the dashboard, we now see the increase in severity to "critical" (red) level, which flags for manual intervention:
+Running the Log Scoring and SAFE Dashboards, we now see the increase in severity to "critical" (red) level, which flags for manual intervention:
 
 ![safe-4](https://github.com/spigeo/automatedforensicsinvestigator/blob/master/hacksmith/safe-4.png)
 
@@ -1161,6 +1164,8 @@ Checking on the dashboard, we now see the increase in severity to "critical" (re
 
 ## Setting up
 If you are using Splunk as your SIEM, please set up your Enterprise Security instance, and install a Splunk Forwarder on your master/bastion server. Instructions on setting that up can be found here: https://www.splunk.com/en_us/download/splunk-enterprise.html
+
+You can also use Free Splunk Enterprise.
 
 Once Splunk is set up, make sure your account on bastion can access the remote target servers. 
 
