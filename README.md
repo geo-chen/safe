@@ -304,6 +304,35 @@ index=safe source="*/userscrontab.log" earliest=-1d
 | collect index=summary source="Baseline - New Cron Jobs" marker="tier=baseline"
 ```
 
+`Baseline - New Hidden Files`
+```
+index=safe source=*/hiddenfilesforotherusers.log earliest=-1d
+| rex field=_raw "(?m)^(?<user>[^ ]+)\ (?m)(?<hidden_files>[^ ]+)$" max_match=400
+| rex field=source ".+\/(?<host>[a-zA-Z0-9]+)\_.+"
+| rex mode=sed field=user "s/\n/ /g"
+| rex mode=sed field=hidden_files "s/\n/ /g"
+| eval user = ltrim(user," ")
+| stats count by user, hidden_files, host
+| eval points = 3
+| eval concat = user . hidden_files . host
+| search NOT [search index=summary source="Baseline - New Hidden Files" earliest=-7d | table user,hidden_files,orig_host | eval concat = user . hidden_files . orig_host | table concat]
+| fields user, hidden_files, host, points
+| collect index=summary sourcetype=stash source="Baseline - New Hidden Files" marker="tier=baseline"
+```
+
+`Baseline - New Identified Windows Processes`
+```
+index=safe source="*/Processlist.log" earliest=-1d
+| rex field=_raw max_match=300 "\ \d\ (?<process_name>[^ ]+)" 
+| rex field=source ".+splunk\/(?<host>[a-zA-Z0-9]+)\_.+"
+| stats count by process_name, host
+| eval points = 4
+| eval concat = host . process_name
+| search NOT [search index=summary source="Baseline - New Identified Windows Processes" earliest=-7d | table orig_host,process_name | eval concat = orig_host.process_name | table concat]
+| fields process_name, host, points 
+| collect index=summary source="Baseline - New Identified Windows Processes" marker="tier=baseline"
+```
+
 `Baseline - New Processes`
 ```
 index=safe source=*pidpsname.log earliest=-1d
@@ -316,21 +345,6 @@ index=safe source=*pidpsname.log earliest=-1d
 | search NOT [search index=summary source="Baseline - New Processes" earliest=-7d | table cmd,orig_host | eval concat = cmd . orig_host | table concat]
 | fields time, cmd, host, points
 | collect index=summary sourcetype=stash source="Baseline - New Processes" marker="tier=baseline"
-```
-
-`Baseline - New Users`
-```
-index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*sshaccess.log" user earliest=-1d
-| rex field=source ".+artefacts\/(?<host>[a-zA-Z0-9]+)\_.+"
-| rex "New\ session\ /d+ of\ user\ (?<user>[a-zA-Z0-9])"
-| rex "session\ opened\ for\ user\ (?<user>[a-zA-Z0-9])\ by"
-| eval time = max(_time) `comment("I know this line should go below")`
-| stats count by user, host
-| eval points = 10
-| search NOT user IN ("sshd","mysql","gdm") `comment("whitelist")`
-| eval concat = user . host
-| search NOT [search index=notable search_name="Baseline - New Users" earliest=-7d | table user,orig_host | eval concat = user . orig_host | table concat]
-| fields user, host, points
 ```
 
 `Baseline - New SSH Users`
@@ -349,19 +363,6 @@ index=safe source="*sshaccess.log" user earliest=-1d
 | collect index=summary sourcetype=stash source="Baseline - New Users" marker="tier=baseline"
 ```
 
-`Baseline - New Processes`
-```
-index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*pidpsname.log" earliest=-1h
-| rex "(?<pid>\d+)\ (?<cmd>\w+)" max_match=0
-| rex field=source ".+artefacts\/(?<host>[a-zA-Z0-9]+)\_.+"
-| eval time = max(_time)
-| eval points = 5
-| stats count by time, cmd, host, points
-| eval concat = cmd . host
-| search NOT [search index=notable search_name="Baseline - New Processes" earliest=-7d | table cmd,orig_host | eval concat = cmd . orig_host | table concat]
-| fields time, cmd, host, points
-```
-
 `Baseline - New Startup Processes`
 ```
 index=safe source=*startupprocess.log earliest=-1d
@@ -373,6 +374,21 @@ index=safe source=*startupprocess.log earliest=-1d
 | search NOT [search index=summary source="Baseline - New Startup Processes" earliest=-7d | table startup_process,orig_host | eval concat = orig_host.startup_process | table concat]
 | fields startup_process, host, points
 | collect index=summary sourcetype=stash source="Baseline - New Startup Processes" marker="tier=baseline"
+```
+
+`Baseline - New Users`
+```
+index="hacksmith" source="/home/master/Dropbox/hacksmith/artefacts/*sshaccess.log" user earliest=-1d
+| rex field=source ".+artefacts\/(?<host>[a-zA-Z0-9]+)\_.+"
+| rex "New\ session\ /d+ of\ user\ (?<user>[a-zA-Z0-9])"
+| rex "session\ opened\ for\ user\ (?<user>[a-zA-Z0-9])\ by"
+| eval time = max(_time) `comment("I know this line should go below")`
+| stats count by user, host
+| eval points = 10
+| search NOT user IN ("sshd","mysql","gdm") `comment("whitelist")`
+| eval concat = user . host
+| search NOT [search index=notable search_name="Baseline - New Users" earliest=-7d | table user,orig_host | eval concat = user . orig_host | table concat]
+| fields user, host, points
 ```
 
 `Baseline - New Windows Processes`
@@ -391,26 +407,13 @@ index=safe source="*/Security.xml" earliest=-1d
 | collect index=summary source="Baseline - New Windows Processes" marker="tier=baseline"
 ```
 
-`Baseline - New Identified Windows Processes`
-```
-index=safe source="*/Processlist.log" earliest=-1d
-| rex field=_raw max_match=300 "\ \d\ (?<process_name>[^ ]+)" 
-| rex field=source ".+splunk\/(?<host>[a-zA-Z0-9]+)\_.+"
-| stats count by process_name, host
-| eval points = 4
-| eval concat = host . process_name
-| search NOT [search index=summary source="Baseline - New Identified Windows Processes" earliest=-7d | table orig_host,process_name | eval concat = orig_host.process_name | table concat]
-| fields process_name, host, points 
-| collect index=summary source="Baseline - New Identified Windows Processes" marker="tier=baseline"
-```
-
 </details>
 
 ### iii. Summary/Notable Scoring - > Dashboard
 This is managed by our Threat Scoring Dashboard.
 
 <details>
-  <summary>Notable Scoring</summary>
+  <summary>Sample Analysing Forensics Examiner</summary>
 
 ```
 index=summary orig_host = $server1$ | stats sum(points) as points count by orig_host, source  | eval points = min(points,100) | stats sum(points) as points count by orig_host | fields points
@@ -422,7 +425,156 @@ index=summary orig_host="$server1$" | timechart count by source
 index=summary orig_host="$server1$" | stats values(*) as * count, sum(points) as points by source | fields - date_*, - eventtype, - host, - index, - info_*, - linecount, - orig_action_name, - orig_rid, - orig_sid, - search_name, - sourcetype, - splunk_server, - tag*, - timeendpos, - timestartpos - time - search_now - cmd| convert ctime(time)
 ```
 
-`Scoring Logs Dashboard`
+```
+<form>
+  <label>Sample Analysing Forensics Examiner</label>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="text" token="server1">
+      <label>server1</label>
+    </input>
+    <input type="text" token="server2">
+      <label>server2</label>
+    </input>
+    <input type="text" token="server3">
+      <label>server3</label>
+    </input>
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <single>
+        <title>$server1$</title>
+        <search>
+          <query>index=summary orig_host = $server1$  | stats sum(points) as points count by orig_host, source  | eval points = min(points,100) | stats sum(points) as points count by orig_host | fields points</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[60,100,200]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>$server2$</title>
+        <search>
+          <query>index=summary orig_host = $server2$  | stats sum(points) as points count by orig_host, source  | eval points = min(points,100) | stats sum(points) as points count by orig_host | fields points</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[60,100,200]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>$server3$</title>
+        <search>
+          <query>index=summary orig_host = $server3$  | stats sum(points) as points count by orig_host, source  | eval points = min(points,100) | stats sum(points) as points count by orig_host | fields points</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[60,100,180]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <chart>
+        <search>
+          <query>index=summary orig_host="$server1$" NOT time IN ("1598629964") earliest=-7d | timechart count by source</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <search>
+          <query>index=summary orig_host="$server2$" NOT time IN ("1598629964") earliest=-7d | timechart count by source</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <search>
+          <query>index=summary orig_host="$server3$" NOT time IN ("1598629964") earliest=-7d | timechart count by source</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>index=summary orig_host="$server1$" | stats values(*) as * count, sum(points) as points by source | fields - date_*, - eventtype, - host, - index, - info_*, - linecount, - orig_action_name, - orig_rid, - orig_sid, - search_name, - sourcetype, - splunk_server, - tag*, - timeendpos, - timestartpos - time - search_now - cmd| convert ctime(time)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>table</title>
+        <search>
+          <query>index=summary orig_host="$server2$" | stats values(*) as * count, sum(points) as points by source | fields - date_*, - eventtype, - host, - index, - info_*, - linecount, - orig_action_name, - orig_rid, - orig_sid, - search_name, - sourcetype, - splunk_server, - tag*, - timeendpos, - timestartpos - time - search_now - cmd| convert ctime(time)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <search>
+          <query>index=summary orig_host="$server3$" | stats values(*) as * count, sum(points) as points by source | fields - date_*, - eventtype, - host, - index, - info_*, - linecount, - orig_action_name, - orig_rid, - orig_sid, - search_name, - sourcetype, - splunk_server, - tag*, - timeendpos, - timestartpos - time - search_now - cmd | convert ctime(time)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+</form>
+```
+
+  <summary>Sample Analysing Forensics Examiner</summary>
 ```
 <form theme="dark">
   <label>SAFE - Scoring Logs</label>
@@ -453,12 +605,15 @@ index=summary orig_host="$server1$" | stats values(*) as * count, sum(points) as
 | accum counter as LineNumber 
 | eval param = "form.server".LineNumber."=".orig_host 
 | stats values(*) as * by counter 
-| eval dashboard="http://localhost:8000/en-GB/app/search/safe?".mvjoin(param,"&amp;") 
+| eval dashboard="http://192.168.50.75:8000/en-GB/app/search/safe?".mvjoin(param,"&amp;") 
 | fields dashboard</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
+          <refresh>5s</refresh>
+          <refreshType>delay</refreshType>
         </search>
         <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
         <drilldown>
           <link target="_blank">http://localhost:8000/en-GB/app/search/safe?form.server1=hslxpdfsvm01&amp;form.server2=hslxpdwbvm01&amp;form.server3=hswnpdadvm01</link>
         </drilldown>
@@ -495,18 +650,54 @@ index=summary orig_host="$server1$" | stats values(*) as * count, sum(points) as
     <panel>
       <table>
         <title>Base - Bad Logins</title>
-        <search ref="Base - Bad Logins"></search>
+        <search>
+          <query>index="safe" source="*badlogins.log" earliest=-1d
+| rex field=source ".+\/(?&lt;host&gt;[a-zA-Z0-9]+)\_.+"
+| rex "(?&lt;user&gt;[a-zA-Z0-9]+)\ .+" max_match=0
+| stats count by user, host
+| eval points = 3
+| eval concat = user . host
+| search NOT user = "btmp"
+| search NOT [search index=summary source="Base - Bad Logins" earliest=-1d | table user,orig_host | eval concat = user . orig_host | table concat]
+| fields user, host, points
+| collect index=summary sourcetype=stash source="Base - Bad Logins" marker="tier=base"</query>
+          <earliest>-1d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
         <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
         <option name="wrap">false</option>
       </table>
     </panel>
     <panel>
       <table>
         <title>Base - New Root Users</title>
-        <search ref="Base - New Root Users"></search>
+        <search>
+          <query>index=safe source="*rootusers.log" earliest=-1d
+| rex "(?&lt;user&gt;.+)" max_match=0
+| rex field=source ".+\/(?&lt;host&gt;[a-zA-Z0-9]+)\_.+"
+| stats count by user, host
+| search NOT user IN ("root") `comment("whitelist")`
+| eval points = 20
+| eval concat = user . host
+| search NOT [search index=summary source="Base - New Root Users" earliest=-1d | table user,orig_host | eval concat = user . orig_host | table concat]
+| fields user, host, points
+| collect index=summary sourcetype=stash source="Base - New Root Users" marker="tier=base"</query>
+          <earliest>-1w</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
         <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
         <option name="wrap">false</option>
       </table>
     </panel>
@@ -556,9 +747,30 @@ index=summary orig_host="$server1$" | stats values(*) as * count, sum(points) as
     <panel>
       <table>
         <title>Base - Suspicious Windows Processes</title>
-        <search ref="Base - Suspicious Windows Processes"></search>
+        <search>
+          <query>index=safe source="*/Security.xml" earliest=-1d
+| spath
+| search "Event.EventData.Data{@Name}"=ProcessName 
+| rex field=_raw max_match=20 "ProcessName\'\&gt;(?&lt;process_name&gt;[^\&lt;]+)\&lt;" 
+| rex field=process_name max_match=20 ".+[\\\](?&lt;process_name&gt;[^\\\]+)$$" 
+| rex field=source ".+splunk\/(?&lt;host&gt;[a-zA-Z0-9]+)\_.+"
+| stats count by process_name, host
+| search process_name IN ("*whois64.exe","*whois.exe","*vmmap.exe","*sync64.exe","*sync.exe","*strings64.exe","*strings.exe","*streams64.exe","*streams.exe","*sigcheck64.exe","*sigcheck.exe","*sdelete64.exe","*sdelete.exe","*ru64.exe","*ru.exe","*regjump.exe","*pssuspend64.exe","*pssuspend.exe","*psshutdown.exe","*psping64.exe","*psping.exe","*pspasswd64.exe","*pspasswd.exe","*psloglist64.exe","*psloglist.exe","*pslist64.exe","*pslist.exe","*pskill64.exe","*pskill.exe","*psfile64.exe","*psfile.exe","*procexp64.exe","*procexp.exe","*procdump64.exe","*procdump.exe","*portmon.exe","*pipelist64.exe","*pipelist.exe","*pendmoves64.exe","*pendmoves.exe","*pagedfrg.exe","*ntfsinfo64.exe","*ntfsinfo.exe","*notmyfaultc64.exe","*notmyfaultc.exe","*notmyfault64.exe","*notmyfault.exe","*movefile64.exe","*movefile.exe","*logonsessions64.exe","*logonsessions.exe","*livekd64.exe","*livekd.exe","*ldmdump.exe","*junction64.exe","*junction.exe","*hex2dec64.exe","*hex2dec.exe","*handle64.exe","*handle.exe","*efsdump.exe","*du64.exe","*du.exe","*diskext64.exe","*diskext.exe","*disk2vhd.exe","*ctrl2cap.exe","*autorunsc64.exe","*autorunsc.exe","*adrestore.exe","*accesschk64.exe","*accesschk.exe","*ZoomIt.exe","*Winobj.exe","*Volumeid64.exe","*Volumeid.exe","*Testlimit64.exe","*Testlimit.exe","*Tcpview.exe","*Tcpvcon.exe","*Sysmon64.exe","*Sysmon.exe","*ShellRunas.exe","*ShareEnum.exe","*RegDelNull64.exe","*RegDelNull.exe","*RAMMap.exe","*PsService64.exe","*PsService.exe","*PsLoggedon64.exe","*PsLoggedon.exe","*PsInfo64.exe","*PsInfo.exe","*PsGetsid64.exe","*PsGetsid.exe","*PsExec64.exe","*PsExec.exe","*Procmon64.exe","*Procmon.exe","*LoadOrdC64.exe","*LoadOrdC.exe","*LoadOrd64.exe","*LoadOrd.exe","*Listdlls64.exe","*Listdlls.exe","*FindLinks64.exe","*FindLinks.exe","*Diskmon.exe","*DiskView.exe","*Desktops.exe","*Dbgview.exe","*Coreinfo64.exe","*Coreinfo.exe","*Contig64.exe","*Contig.exe","*Clockres64.exe","*Clockres.exe","*Cacheset.exe","*CPUSTRES64.EXE","*CPUSTRES.EXE","*Bginfo64.exe","*Bginfo.exe","*Autoruns64.exe","*Autoruns.exe","*Autologon.exe","*AccessEnum.exe","*ADInsight.exe","*ADExplorer.exe")
+| eval points = 20
+| eval concat = host . process_name
+| search NOT [search index=summary source="Base - Suspicious Windows Processes" earliest=-1d | table orig_host,process_name | eval concat = orig_host . process_name | table concat]
+| fields host, payload, points
+| collect index=summary sourcetype=stash source="Base - Suspicious Windows Processes" marker="tier=base"</query>
+          <earliest>-1d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
         <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
         <option name="wrap">false</option>
       </table>
     </panel>
@@ -647,9 +859,27 @@ index=summary orig_host="$server1$" | stats values(*) as * count, sum(points) as
     <panel>
       <table>
         <title>Baseline - New Processes</title>
-        <search ref="Baseline - New Processes"></search>
+        <search>
+          <query>index=safe source=*pidpsname.log earliest=-1d
+| rex "(?&lt;pid&gt;\d+)\ (?&lt;cmd&gt;\w+)" max_match=0
+| rex field=source ".+splunk\/(?&lt;host&gt;[a-zA-Z0-9]+)\_.+"
+| eval time = max(_time)
+| eval points = 5
+| stats count by time, cmd, host, points
+| eval concat = cmd . host
+| search NOT [search index=summary source="Baseline - New Processes" earliest=-7d | table cmd,orig_host | eval concat = cmd . orig_host | table concat]
+| fields time, cmd, host, points
+| collect index=summary sourcetype=stash source="Baseline - New Processes" marker="tier=baseline"</query>
+          <earliest>-1h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
         <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
         <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
         <option name="wrap">false</option>
       </table>
     </panel>
@@ -766,9 +996,29 @@ index=summary orig_host="$server1$" | stats values(*) as * count, sum(points) as
     <panel>
       <table>
         <title>Baseline - New Windows Processes</title>
-        <search ref="Baseline - New Windows Processes"></search>
+        <search>
+          <query>index=safe source="*/Security.xml" earliest=-1d
+| spath 
+| search "Event.EventData.Data{@Name}"=ProcessName 
+| rex field=_raw max_match=20 "ProcessName\'\&gt;(?&lt;process&gt;[^\&lt;]+)\&lt;" 
+| rex field=process max_match=20 ".+[\\\](?&lt;process_name&gt;[^\\\]+)$$" 
+| rex field=source ".+splunk\/(?&lt;host&gt;[a-zA-Z0-9]+)\_.+"
+| stats count by process_name, host
+| eval points = 4
+| eval concat = host . process_name
+| search NOT [search index=summary source="Baseline - New Windows Processes" earliest=-7d | table orig_host,process_name | eval concat = orig_host.process_name | table concat]
+| fields process_name, host, points 
+| collect index=summary source="Baseline - New Windows Processes" marker="tier=baseline"</query>
+          <earliest>-1d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
         <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
         <option name="wrap">false</option>
       </table>
     </panel>
@@ -780,6 +1030,7 @@ index=summary orig_host="$server1$" | stats values(*) as * count, sum(points) as
 | rex "(?m)^(?&lt;cron&gt;[^#\r\n]+)" max_match=0
 | rex field=source ".+splunk\/(?&lt;host&gt;[a-zA-Z0-9]+)\_.+"
 | stats count by cron, host
+| eval cron = rtrim(cron," ")
 | eval points = 5
 | eval concat = host . cron
 | search NOT [search index=summary source="Baseline - New Cron Jobs" earliest=-7d | table orig_host,cron | eval concat = orig_host.cron | table concat]
@@ -793,6 +1044,7 @@ index=summary orig_host="$server1$" | stats values(*) as * count, sum(points) as
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
         <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
         <option name="rowNumbers">false</option>
         <option name="totalsRow">false</option>
         <option name="wrap">true</option>
@@ -811,6 +1063,35 @@ index=summary orig_host="$server1$" | stats values(*) as * count, sum(points) as
 | search NOT [search index=summary source="Baseline - New Identified Windows Processes" earliest=-7d | table orig_host,process_name | eval concat = orig_host.process_name | table concat]
 | fields process_name, host, points 
 | collect index=summary source="Baseline - New Identified Windows Processes" marker="tier=baseline"</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <table>
+        <title>Baseline - New Hidden Files</title>
+        <search>
+          <query>index=safe source=*/hiddenfilesforotherusers.log earliest=-1d
+| rex field=_raw "(?m)^(?&lt;user&gt;[^ ]+)\ (?m)(?&lt;hidden_files&gt;[^ ]+)$$" max_match=400
+| rex field=source ".+\/(?&lt;host&gt;[a-zA-Z0-9]+)\_.+"
+| rex mode=sed field=user "s/\n/ /g"
+| rex mode=sed field=hidden_files "s/\n/ /g"
+| eval user = ltrim(user," ")
+| stats count by user, hidden_files, host
+| eval points = 3
+| eval concat = user . hidden_files . host
+| search NOT [search index=summary source="Baseline - New Hidden Files" earliest=-7d | table user,hidden_files,orig_host | eval concat = user . hidden_files . orig_host | table concat]
+| fields user, hidden_files, host, points
+| collect index=summary sourcetype=stash source="Baseline - New Hidden Files" marker="tier=baseline"</query>
           <earliest>-24h@h</earliest>
           <latest>now</latest>
           <sampleRatio>1</sampleRatio>
