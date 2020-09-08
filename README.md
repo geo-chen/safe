@@ -573,8 +573,12 @@ index=summary orig_host="$server1$" | stats values(*) as * count, sum(points) as
   </row>
 </form>
 ```
-</details><details>
+</details>
+
+<details>
+  
   <summary>Sample Analysing Forensics Examiner</summary>
+  
 ```
 <form theme="dark">
   <label>SAFE - Scoring Logs</label>
